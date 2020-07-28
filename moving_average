@@ -1,0 +1,13 @@
+WITH cases AS
+  (SELECT date, 
+       confirmed_cases,
+       county, 
+        LAG(confirmed_cases)
+          OVER (ORDER BY date ASC) AS preceding_days_count    
+FROM `bigquery-public-data.covid19_nyt.us_counties`
+WHERE state_name = 'Colorado' and county = 'Boulder' LIMIT 200)
+  SELECT date, county, confirmed_cases,
+   (confirmed_cases - preceding_days_count) AS change_from_yesterday,
+   AVG(confirmed_cases - preceding_days_count) 
+    OVER (ORDER BY date ASC ROWS 9 PRECEDING) AS moving_avg_10d
+  FROM cases;
